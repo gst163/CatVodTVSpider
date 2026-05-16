@@ -1,0 +1,37 @@
+name: Auto Build Spider Jar
+
+# 关键：提交代码就自动打包
+on:
+  push:
+    branches: [ main ]  # 推送到 main 分支自动运行
+  workflow_dispatch:   # 保留手动触发（可选）
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write  # 必须开，否则无法自动提交jar
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 配置 JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: 执行打包脚本
+        run: ./buildAndGenJar.bat ec
+        shell: cmd
+
+      - name: 自动提交新jar到仓库
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "CI 自动更新 spider jar"
+          add: "./jar/custom_spider.jar ./jar/custom_spider.jar.md5"
+          default_author: github_actions
