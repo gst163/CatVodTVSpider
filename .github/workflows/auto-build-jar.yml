@@ -1,19 +1,19 @@
-name: Auto Build Spider Jar
+name: 自动检测更新并打包 Spider Jar
 
-# 关键：提交代码就自动打包
+# 只要代码一更新，立刻自动打包
 on:
   push:
-    branches: [ main ]  # 推送到 main 分支自动运行
-  workflow_dispatch:   # 保留手动触发（可选）
+    branches: [ main ]
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: write  # 必须开，否则无法自动提交jar
+      contents: write
 
     steps:
-      - name: 拉取代码
+      - name: 拉取最新代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -25,13 +25,14 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: 执行打包脚本
-        run: ./buildAndGenJar.bat ec
+      - name: 执行自动打包
+        run: call buildAndGenJar.bat ec
         shell: cmd
 
-      - name: 自动提交新jar到仓库
+      - name: 提交新版本 Jar 到仓库
         uses: EndBug/add-and-commit@v9
         with:
-          message: "CI 自动更新 spider jar"
-          add: "./jar/custom_spider.jar ./jar/custom_spider.jar.md5"
+          message: "CI 自动构建：更新 spider jar"
+          add: "jar/*.jar jar/*.md5"
           default_author: github_actions
+     
